@@ -1,9 +1,12 @@
 ---
 name: agent-onboarding
 description: Onboard an AI coding agent to a Syncfusion project. Identifies the framework and product family, installs or selects the official component skills, finds current documentation, handles licensing safely, and verifies a working implementation. Use when starting, integrating, upgrading, migrating, evaluating, or troubleshooting Syncfusion UI components, document SDKs, viewers, or editors on any platform.
+metadata:
+  author: "Syncfusion Inc"
+  version: "1.0.0"
 ---
 
-# Agent onboarding
+# Syncfusion onboarding
 
 Source: https://ai.syncfusion.com/agent-onboarding/SKILL.md
 Canonical: https://ai.syncfusion.com/agent-onboarding/SKILL.md
