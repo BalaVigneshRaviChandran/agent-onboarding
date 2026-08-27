@@ -1,9 +1,5 @@
 # Verifying a Syncfusion implementation
 
-Canonical: https://ai.syncfusion.com/agent-onboarding/references/verification.md
-Updated: 2026-08-21
-License-posture: Everything here is free to read. Installing Syncfusion agent skills requires no license, key or account. Using Syncfusion libraries in an application requires a commercial, Community, or trial license — see https://ai.syncfusion.com/licensing.md
-
 Read this before telling a user that a Syncfusion implementation works.
 
 ## The rule

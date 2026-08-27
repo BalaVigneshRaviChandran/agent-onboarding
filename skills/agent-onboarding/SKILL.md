@@ -8,13 +8,6 @@ metadata:
 
 # Syncfusion onboarding
 
-Source: https://ai.syncfusion.com/agent-onboarding/SKILL.md
-Canonical: https://ai.syncfusion.com/agent-onboarding/SKILL.md
-License-posture: Installing and reading this skill requires no license, key or account. Using Syncfusion libraries in an application requires a commercial, Community, or trial license — see https://ai.syncfusion.com/licensing.md
-Updated: 2026-08-21
-Essential Studio release: 2026 Volume 2 (v34.1.29); current published build v34.2.4
-Covers: 775 official skills across 16 platform and SDK packs
-
 Use this skill as the front door to Syncfusion. Route the task to the official framework or component
 skill. Do not try to reproduce the Syncfusion API from memory here — Syncfusion spans web, desktop,
 mobile, document-processing, viewer and editor products, and the same component name has different

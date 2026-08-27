@@ -1,12 +1,5 @@
 # Syncfusion MCP servers — reference for agents
 
-Canonical: https://ai.syncfusion.com/agent-onboarding/references/mcp-setup.md
-Updated: 2026-08-21
-Live version, with per-editor configuration: https://ai.syncfusion.com/mcp/llms.txt
-Transport: stdio only. No Syncfusion MCP server uses HTTP or SSE.
-Credential: MCP API key from https://www.syncfusion.com/account/api-key — not a product license key
-License-posture: Everything here is free to read. Installing Syncfusion agent skills requires no license, key or account. Using Syncfusion libraries in an application requires a commercial, Community, or trial license — see https://ai.syncfusion.com/licensing.md
-
 ## Decide whether you need it
 
 | Situation | Do this |
