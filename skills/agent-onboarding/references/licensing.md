@@ -1,13 +1,5 @@
 # Syncfusion licensing and agent trust boundaries
 
-Canonical: https://ai.syncfusion.com/agent-onboarding/references/licensing.md
-Live version: https://ai.syncfusion.com/licensing.md
-Updated: 2026-08-21
-Essential-Studio-release: 2026 Volume 2 (v34.1.29)
-Applies-to: all Syncfusion platforms and SDKs
-Audience: AI coding agents, and the humans reviewing what an agent did
-License-posture: Everything here is free to read. Installing Syncfusion agent skills requires no license, key or account. Using Syncfusion libraries in an application requires a commercial, Community, or trial license — see https://ai.syncfusion.com/licensing.md
-
 > Read this before touching any key, secret, credential, account action or CI configuration in a
 > Syncfusion project. Licensing is where an agent can do real damage quietly: a committed key is a
 > security incident, and a wrong licensing claim is a compliance problem. The rules below are short

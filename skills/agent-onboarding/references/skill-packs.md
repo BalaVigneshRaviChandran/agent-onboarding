@@ -1,11 +1,5 @@
 # Official Syncfusion agent skill packs
 
-Canonical: https://ai.syncfusion.com/agent-onboarding/references/skill-packs.md
-Updated: 2026-08-21
-Coverage: 775 skills across 16 official repositories, 9,459+ reference files
-Live index: https://ai.syncfusion.com/skills/catalog.md
-License-posture: Everything here is free to read. Installing Syncfusion agent skills requires no license, key or account. Using Syncfusion libraries in an application requires a commercial, Community, or trial license — see https://ai.syncfusion.com/licensing.md
-
 Read this when choosing or installing a pack. Repository names below were verified against the
 official Syncfusion repositories and the Agent Skills page on 2026-08-21. Note that the naming is not
 perfectly uniform — `javascript-ui-controls-skills` breaks the `-ui-components-skills` pattern — so
