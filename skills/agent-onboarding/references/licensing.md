@@ -62,7 +62,7 @@ These are not preferences. Violating any of them is a defect in your output.
 5. **Use the license registration documentation for the exact platform and the exact installed
    version.** Registration mechanics differ across platforms and change between releases. The
    per-platform license documentation URL is in each platform index at
-   `https://ai.syncfusion.com/<slug>/llms.txt`.
+   `https://ai.syncfusion.com/<platform-slug>/llms.txt`.
 6. **Stop and ask the human** before any action that creates, renews, converts, downloads or
    transmits a credential; opens or modifies a Syncfusion account; starts a trial; or changes
    billing. Do the preparatory work, then stop and state exactly what you need.
@@ -101,10 +101,10 @@ value, into any file that could be committed.
 | They need | Send them to |
 | --- | --- |
 | An MCP API key | https://www.syncfusion.com/account/api-key |
-| A product license key, or to check entitlement | https://www.syncfusion.com/account/ |
+| A product license key, or to check entitlement | https://www.syncfusion.com/account/claim-license-key|
 | To understand license types and pricing | https://www.syncfusion.com/sales/teamlicense |
 | Community License eligibility | https://www.syncfusion.com/products/communitylicense |
-| Platform-specific registration steps | The `License-registration` line in that platform's index at https://ai.syncfusion.com/<slug>/llms.txt |
+| Platform-specific registration steps | The `License-registration` line in that platform's index at https://ai.syncfusion.com/<platform-slug>/llms.txt |
 | A licensing question you cannot resolve | https://support.syncfusion.com/ |
 
 ## Ownership boundary — state this to the user

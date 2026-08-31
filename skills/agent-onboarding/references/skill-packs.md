@@ -34,21 +34,20 @@ without installing, and `-g` installs globally.
 
 | Platform or SDK | Repository | Skills | Agent index |
 | --- | --- | --- | --- |
-| React | `syncfusion/react-ui-components-skills` | 62 | /react/llms.txt |
-| Angular | `syncfusion/angular-ui-components-skills` | 62 | /angular/llms.txt |
-| JavaScript | `syncfusion/javascript-ui-controls-skills` | 50 | /javascript/llms.txt |
-| Vue | `syncfusion/vue-ui-components-skills` | 30 | /vue/llms.txt |
-| Blazor | `syncfusion/blazor-ui-components-skills` | 68 | /blazor/llms.txt |
-| ASP.NET Core | `syncfusion/aspnetcore-ui-components-skills` | 64 | /aspnet-core/llms.txt |
-| ASP.NET MVC | `syncfusion/aspnetmvc-ui-components-skills` | 20 | /aspnet-mvc/llms.txt |
-| Flutter | `syncfusion/flutter-ui-components-skills` | 14 | /flutter/llms.txt |
+| React | `syncfusion/react-ui-components-skills` | 65 | /react/llms.txt |
+| Angular | `syncfusion/angular-ui-components-skills` | 65 | /angular/llms.txt |
+| JavaScript | `syncfusion/javascript-ui-controls-skills` | 53 | /javascript/llms.txt |
+| Vue | `syncfusion/vue-ui-components-skills` | 33 | /vue/llms.txt |
+| Blazor | `syncfusion/blazor-ui-components-skills` | 72 | /blazor/llms.txt |
+| ASP.NET Core | `syncfusion/aspnetcore-ui-components-skills` | 67 | /aspnet-core/llms.txt |
+| ASP.NET MVC | `syncfusion/aspnetmvc-ui-components-skills` | 23 | /aspnet-mvc/llms.txt |
+| Flutter | `syncfusion/flutter-ui-components-skills` | 15 | /flutter/llms.txt |
 | .NET MAUI | `syncfusion/maui-ui-components-skills` | 77 | /maui/llms.txt |
 | Toolkit for .NET MAUI | `syncfusion/maui-toolkit-ui-components-skills` | 35 | /maui-toolkit/llms.txt |
-| WinForms | `syncfusion/winforms-ui-components-skills` | 113 | /winforms/llms.txt |
-| WPF | `syncfusion/wpf-ui-components-skills` | 96 | /wpf/llms.txt |
+| WinForms | `syncfusion/winforms-ui-components-skills` | 115 | /winforms/llms.txt |
+| WPF | `syncfusion/wpf-ui-components-skills` | 99 | /wpf/llms.txt |
 | WinUI | `syncfusion/winui-ui-components-skills` | 38 | /winui/llms.txt |
 | Document SDK | `syncfusion/document-sdk-skills` | 12 | /document-sdk/llms.txt |
-| MAUI AI-driven design | `syncfusion/maui-ai-driven-apps-with-design-skills` | 1 | /maui-ai-design/llms.txt |
 | Xamarin to .NET MAUI | `syncfusion/xamarin-maui-migration-skills` | 4 | /xamarin-to-maui-migration/llms.txt |
 
 Prefix an agent index with `https://ai.syncfusion.com`.
@@ -101,7 +100,7 @@ JetBrains-adjacent agent is in use, the installer supports Junie (`.junie/skills
   Document SDK creates, converts, signs and extracts programmatically. One feature often needs both.
 - **.NET MAUI vs MAUI Toolkit.** Separate products, separate packages, separate initialisers. A
   `syncfusion-maui-*` skill does not apply unchanged to a `syncfusion-maui-toolkit-*` control.
-- **Workflow packs.** The MAUI AI design pack and the Xamarin migration pack are meant to be used
+- **Workflow packs.** The Xamarin migration pack is meant to be used
   *with* the .NET MAUI component pack, not instead of it.
 
 ## Handoff checklist

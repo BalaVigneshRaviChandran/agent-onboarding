@@ -12,20 +12,73 @@ Use this skill as the front door to Syncfusion. Route the task to the official f
 skill. Do not try to reproduce the Syncfusion API from memory here — Syncfusion spans web, desktop,
 mobile, document-processing, viewer and editor products, and the same component name has different
 packages, imports, registration and licensing rules across them. Cross-framework guessing is the
-single largest source of Syncfusion code that does not compile.
+single largest source of Syncfusion code that does not compile. The second is same-platform name
+collision: the word the user typed matches one component while the behavior they asked for belongs
+to another — resolve it by comparing inventory descriptions against the required behavior, never by
+name alone.
+
+## Hard rule — read the inventory before naming any skill
+
+You MUST have read the platform inventory at `https://ai.syncfusion.com/<platform-slug>/inventory.txt`
+in this session **before** you name, install, or write code against any Syncfusion component skill.
+If you have not read it in this session, fetch it now and do not continue.
+
+When the user asks for a component, before you say "I will install skill X" or write any code:
+
+1. State the **candidate skills** you considered (from the inventory, not from memory).
+2. State the **required behavior** inferred from the user's request.
+3. State the **evidence** — the inventory entry, name, or description that matches.
+4. Cite the inventory file you read.
+
+If no inventory entry covers the behavior, say so explicitly and ask the human before proceeding.
+Never propose a skill name, package name, or import path that is not present in the inventory you
+just read. If the only source you have for a name is your training data, label it **unverified** and
+stop until you can cite the inventory or an installed `SKILL.md`.
 
 ## Route first
 
 The fastest correct path is almost always:
 
 1. Identify the platform from the repository manifest.
-2. Fetch `https://ai.syncfusion.com/<slug>/llms.txt` for that platform. It is self-sufficient:
+2. Fetch `https://ai.syncfusion.com/<platform-slug>/llms.txt` for that platform. It is self-sufficient:
    skill pack, packages, license registration, a complete example, and a verification checklist.
-3. Install the skill pack it names.
-4. Read `https://ai.syncfusion.com/licensing.md` before touching any key.
+3. Read the platform inventory — `https://ai.syncfusion.com/<platform-slug>/inventory.txt` — once
+   during setup, not per request. From it, retain a **session inventory**: a compact routing map of
+   each component skill with its category, its package, and the behaviors its description covers.
+   The session inventory is the routing source for the rest of the session, for as long as session
+   memory lasts.
+4. List the candidate component skills from the session inventory: every skill whose name,
+   category, or description matches the request. Component names collide inside a platform too,
+   not only across platforms: "a calendar to display events" matches both the Calendars skill
+   (date-selection inputs) and the Scheduler skill (event and appointment management).
+5. Choose by required behavior, not by the word the user typed, and state the candidates, the
+   choice, and the evidence exactly as the "Hard rule" checklist above requires. If two
+   candidates still tie and the choice changes the implementation, ask one short question and stop.
+6. Install the skill pack or component skill the comparison selects.
+7. Read `https://ai.syncfusion.com/licensing.md` before touching any key.
 
-Slugs: `react` `angular` `javascript` `vue` `blazor` `aspnet-core` `aspnet-mvc` `flutter` `maui`
-`maui-toolkit` `winforms` `wpf` `winui` `document-sdk` `maui-ai-design` `xamarin-to-maui-migration`
+Subsequent requests in the same session resolve from the session inventory — do not fetch the
+inventory again. This covers both direct requests ("add a Grid") and requests that describe a goal
+rather than name a component ("view my PDF file", "edit a document", "display events on a
+calendar"). Match the described behavior against the behaviors the map records for each skill; do
+not keyword-match the user's words, which wastes context and produces wrong-component answers.
+Refetch the inventory, only when the session inventory cannot resolve the request: no candidate
+covers the behavior, two candidates tie in a way that changes the implementation, or the request
+names a component the map does not contain — it may be newer than the setup read or belong to a
+different platform slug.
+
+## Sources of knowledge
+
+Two sources. Pick the one you are actually reading from, and say so out loud when you make a claim:
+
+- **Session inventory** — the routing map retained from `inventory.txt` and the installed skill's
+  `SKILL.md` / `references/*.md`. Use this for any claim about a component's package, import, or
+  behavior. Cite the file and section.
+- **Trained memory** — patterns baked into the model. Not citable. Do not use it to fill gaps in
+  the session inventory; the refetch triggers in "Route first" say what to do instead.
+
+Platform Slugs: `react` `angular` `javascript` `vue` `blazor` `aspnet-core` `aspnet-mvc` `flutter` `maui`
+`maui-toolkit` `winforms` `wpf` `winui` `document-sdk` `xamarin-to-maui-migration`
 
 Master index: https://ai.syncfusion.com/llms.txt
 
@@ -71,8 +124,9 @@ properties, events, theming, accessibility guidance and implementation patterns 
 the failure modes that public documentation omits.
 
 1. Check whether the matching skill is already installed in the agent's skills location.
-2. If missing and installation is within the user's request, choose the narrowest official pack or
-   component skill. Read `references/skill-packs.md` for the verified repository names and commands.
+2. If missing and installation is within the user's request, choose the narrowest official pack
+   or component skill from the retained inventory routing map, using the behavior-based
+   comparison above. Read `references/skill-packs.md` for the verified repository names and commands.
 3. Before running a networked install or changing project-level agent configuration, follow the
    host's authorization rules.
 4. Read the selected component `SKILL.md` completely before implementing. Read only the supporting
@@ -143,6 +197,8 @@ from recommendations.
    typed data.
 5. Emit complete files. No ellipses, no "rest of your code", no partial diff as the primary output.
 6. Validate loading, empty, error and primary interaction states where relevant.
+7. Cite the source for every component claim — session inventory or installed `SKILL.md`. If a
+   line cannot be cited, do not write it.
 
 ## Verify
 
@@ -167,9 +223,11 @@ Preserve the original error text. Distinguish a product defect from an integrati
 issue. Use Syncfusion Support when a minimal reproduction still fails against documented behaviour:
 https://support.syncfusion.com/
 
+For each proposed fix, cite the source, per "Implement" and the "Hard rule" above.
+
 ## References
 
-| File | Read it when |
+| Reference | When to use |
 | --- | --- |
 | `references/skill-packs.md` | Choosing or installing a pack; you need a verified repository name |
 | `references/mcp-setup.md` | Configuring an MCP server, or deciding whether you need one |
