@@ -15,6 +15,12 @@ This following command will install the skill to your workspace.
 npx skills add https://github.com/syncfusion/agent-onboarding-skill
 ```
 
+## The Onboarding Site — ai.syncfusion.com
+
+This skill enforces **[Syncfusion for AI coding agents](https://ai.syncfusion.com)**, the
+official Syncfusion onboarding site as the source of truth. All routing, inventory, license,
+and verification rules come from that site — never from the model's training memory.
+
 ## How This Skill Works
 
 The skill folder contains:

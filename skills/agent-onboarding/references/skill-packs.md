@@ -10,7 +10,10 @@ copy the name from the table rather than constructing it.
 - Match the repository's framework first, then the product family, then the component.
 - Prefer `--skill <skill_name>` when the exact component is known.
 - Use the interactive form when the skill name is uncertain — it lists what the pack contains.
-- Use `-y` to install a whole pack only when broad or repeated Syncfusion work is expected.
+- Use `-y` to install a whole pack only when the user explicitly asks for the whole pack — never
+  by default at setup, and never because broad or repeated Syncfusion work is merely expected.
+- At setup, install component skills only for Syncfusion components already present in the
+  project. Later requests install only the skills they actually require.
 - Default to project-local installation. Use `-g` only when the user explicitly wants the skill
   across unrelated projects.
 - After installation, inspect the skills directory and read the chosen `SKILL.md` before editing
@@ -30,7 +33,7 @@ npx skills add https://github.com/syncfusion/<repository>     # equivalent to th
 `owner/repo` shorthand is valid. The installer is the `skills` CLI; `--list` shows a pack's contents
 without installing, and `-g` installs globally.
 
-## All 16 packs
+## All 18 packs
 
 | Platform or SDK | Repository | Skills | Agent index |
 | --- | --- | --- | --- |
