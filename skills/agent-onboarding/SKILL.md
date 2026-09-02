@@ -52,9 +52,17 @@ The fastest correct path is almost always:
    not only across platforms: "a calendar to display events" matches both the Calendars skill
    (date-selection inputs) and the Scheduler skill (event and appointment management).
 5. Choose by required behavior, not by the word the user typed, and state the candidates, the
-   choice, and the evidence exactly as the "Hard rule" checklist above requires. If two
-   candidates still tie and the choice changes the implementation, ask one short question and stop.
-6. Install the skill pack or component skill the comparison selects.
+   choice, and the evidence exactly as the "Hard rule" checklist above requires. First resolve
+   collisions yourself by comparing each candidate's inventory description against the required
+   behavior and picking the best match.
+   Ask one short question only when the descriptions genuinely cannot distinguish the candidates
+   or no candidate fits — never as a shortcut.
+6. Install, on demand, the component skills the comparison selects — one request may name or
+   imply one component or many. Run the candidate-comparison above once per component and install
+   exactly that set: not more, not less — a request for three components installs exactly those
+   three component skills, and nothing else. Never install a whole platform pack unless the user
+   explicitly asks for it. At setup, install only component skills for Syncfusion components
+   already present in the project; later requests install only the skills they actually require.
 7. Read `https://ai.syncfusion.com/licensing.md` before touching any key.
 
 Subsequent requests in the same session resolve from the session inventory — do not fetch the
@@ -134,9 +142,11 @@ the failure modes that public documentation omits.
 5. Follow the installed skill over remembered snippets. Match the versions already in the project
    unless the user asked for an upgrade.
 
-Prefer a single component skill when the component is known; install a full platform pack when the
-user expects broad or repeated Syncfusion work. Project-local installation keeps the skill aligned
-with the repository and shareable with the team.
+Prefer a single component skill when the component is known; install a full platform pack only when
+the user explicitly asks for the whole pack — never by default at setup or per request. At setup,
+install component skills only for Syncfusion components already present in the project, and wait
+until a user request actually requires a component before installing its skill. Project-local
+installation keeps the skill aligned with the repository and shareable with the team.
 
 Installing an agent skill does not install the Syncfusion product packages. The component skill
 identifies the actual runtime dependencies; install those separately.
