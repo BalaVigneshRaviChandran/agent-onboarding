@@ -144,6 +144,10 @@ Syncfusion publishes component-aware skills that include setup instructions, imp
    comparison above. Read `references/skill-packs.md` for the verified repository names and commands.
    Skill installation is separate from Syncfusion package installation; do not install component
    packages until the skill selection step is complete.
+   For dependency changes, use the official package-manager command specified by the selected
+   platform or component skill (`dotnet add package`, `npm install`, `flutter pub add`, or the
+   equivalent). Do not manually edit a manifest as a substitute for package-manager installation;
+   use file-edit tools only for direct source or configuration changes.
 3. Before running a networked install or changing project-level agent configuration, follow the
    host's authorization rules. Report the source, target path, scope, and revision before making 
    the change.
@@ -166,9 +170,10 @@ Before installing any new Syncfusion package:
 
 1. Inspect the project manifest (`package.json`, `.csproj`, or equivalent).
 2. Identify all existing Syncfusion packages.
-3. Extract only their major versions.
-4. Verify that all discovered Syncfusion packages use the same major version.
-5. If more than one major version is present, stop immediately. Do not install, upgrade, downgrade,
+3. Extract their versions — for npm, the major version; for NuGet and Flutter, the exact version.
+4. Verify consistency — for npm, all packages share the same major version; for NuGet and Flutter,
+   all packages share the same exact version.
+5. If the versions are not consistent, stop immediately. Do not install, upgrade, downgrade,
    or generate Syncfusion code until the user chooses a version strategy.
 
 #### No Existing Syncfusion Packages
@@ -179,6 +184,20 @@ If no Syncfusion packages are present:
 - Install the version recommended by the component skill.
 
 #### Existing Syncfusion Packages Found
+
+The version-matching strategy differs by package manager. Identify the platform first, then follow
+the rule for that package manager.
+
+| Platform family | Manifest | Package manager | Version rule |
+| --- | --- | --- | --- |
+| React, Angular, Vue, JavaScript | `package.json` | npm | Match the shared major version |
+| Blazor, ASP.NET Core, ASP.NET MVC, MAUI, WPF, WinForms, WinUI | `.csproj` | NuGet (`dotnet add package`) | Match the exact version of existing packages |
+| Flutter | `pubspec.yaml` | pub.dev (`flutter pub add`) | Match the exact version constraint of existing packages |
+
+For NuGet and Flutter: if existing packages share the same major version but differ in their exact
+version or constraint (for example `27.1.48` and `27.2.3` in the same `.csproj`), stop and report
+the inconsistency. Do not pick one arbitrarily. Wait for the user to align all existing packages to
+a single exact version before installing a new one.
 
 ### Fresh version gate
 
@@ -192,9 +211,13 @@ If Syncfusion packages are already present:
 - Determine the project's shared major version.
 - If the discovered packages do not have one shared major version, fail closed and provide a
    mixed-major compatibility report instead of selecting one major arbitrarily.
-- Ignore minor and patch versions.
-- Do not attempt to match an individual package's exact version.
-- Install the requested component using the latest available release within the project's major version.
+- **npm only:** Ignore minor and patch versions. Install the requested component using the latest
+  available release within the project's major version.
+- **NuGet only:** All packages must be at the exact same version. Read the exact version from the
+  existing `<PackageReference>` entries and use that version when installing the new package.
+- **Flutter only:** All packages must use the same version constraint. Read the exact constraint
+  from existing `syncfusion_flutter_*` entries in `pubspec.yaml` and use that constraint when
+  adding the new package.
 
 Example:
 
@@ -216,6 +239,52 @@ For JavaScript-family packages, the major-version selector can be used directly:
 
 ```bash
 npm install @syncfusion/ej2-react-grids@33
+```
+
+For NuGet (.NET platforms — Blazor, ASP.NET Core, ASP.NET MVC, MAUI, WPF, WinForms, WinUI):
+
+Read the exact version from the existing `<PackageReference>` entries in `.csproj`. All Syncfusion
+.NET packages in a project must be at the **exact same version**, not just the same major. They are
+released and tested as a synchronized set.
+
+Example:
+
+```text
+Existing packages in .csproj:
+<PackageReference Include="Syncfusion.Blazor.Grid"    Version="27.1.48" />
+<PackageReference Include="Syncfusion.Blazor.Themes"  Version="27.1.48" />
+
+Project exact version = 27.1.48
+
+New component:
+Syncfusion.Blazor.Charts
+
+Install:
+dotnet add package Syncfusion.Blazor.Charts --version 27.1.48
+```
+
+Do not use `--version 27.*`. That leaves a floating range in the `.csproj`, which can silently pull
+a different patch version on future restores and break the synchronized-set guarantee.
+
+For Flutter (pub.dev):
+
+Read the exact version constraint from existing `syncfusion_flutter_*` entries in `pubspec.yaml`.
+Match that constraint exactly.
+
+Example:
+
+```text
+Existing packages in pubspec.yaml:
+syncfusion_flutter_charts: ^27.1.48
+syncfusion_flutter_core:   ^27.1.48
+
+Project version constraint = ^27.1.48
+
+New component:
+syncfusion_flutter_calendar
+
+Install:
+flutter pub add syncfusion_flutter_calendar:'^27.1.48'
 ```
 
 #### User-Specified Version
@@ -241,13 +310,56 @@ Instead, provide a version-difference report containing:
 
 After reporting the conflict, wait for human guidance before making any changes.
 
-Example:
+npm example:
 
 Requested:
 
 ```text
 @syncfusion/ej2-react-schedule@34.1.2
 ```
+
+Project has:
+
+```text
+@syncfusion/ej2-react-grids      33.1.44
+@syncfusion/ej2-react-buttons    33.2.7
+```
+
+Conflict: requested major (34) does not match project major (33). Stop and report.
+
+NuGet example:
+
+Requested:
+
+```text
+dotnet add package Syncfusion.Blazor.Charts --version 28.1.35
+```
+
+Project has:
+
+```text
+<PackageReference Include="Syncfusion.Blazor.Grid"   Version="27.1.48" />
+<PackageReference Include="Syncfusion.Blazor.Themes" Version="27.1.48" />
+```
+
+Conflict: requested major (28) does not match project exact version (27.1.48). Stop and report.
+
+Flutter example:
+
+Requested:
+
+```text
+syncfusion_flutter_calendar: ^28.1.35
+```
+
+Project has:
+
+```text
+syncfusion_flutter_charts: ^27.1.48
+syncfusion_flutter_core:   ^27.1.48
+```
+
+Conflict: requested major (28) does not match project constraint major (27). Stop and report.
 
 ## Path B — current documentation
 
