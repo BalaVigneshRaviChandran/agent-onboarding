@@ -39,7 +39,10 @@ stop until you can cite the inventory or an installed `SKILL.md`.
 
 The fastest correct path is almost always:
 
-1. Identify the platform from the repository manifest.
+1. Identify the target project and platform from the repository manifests. Use the active file,
+   the user's named project, or the solution/startup project to select the target. If no target is
+   known, enumerate manifests while excluding generated and dependency directories such as
+   `node_modules`, `bin`, and `obj`; never choose the first matching manifest.
 2. Fetch `https://ai.syncfusion.com/<platform-slug>/llms.txt` for that platform. It is self-sufficient:
    skill pack, packages, license registration, a complete example, and a verification checklist.
 3. Read the platform inventory — `https://ai.syncfusion.com/<platform-slug>/inventory.txt` — once
@@ -107,8 +110,11 @@ Inspect the repository before asking the user for anything already present. Dete
 Manifest signals: `package.json` for React, Angular, Vue and JavaScript; `.csproj` for Blazor,
 ASP.NET Core, ASP.NET MVC, MAUI, WPF, WinForms and WinUI; `pubspec.yaml` for Flutter.
 
-Do not mix examples across platforms. If the repository does not resolve the platform and the choice
-changes the implementation, ask one short question and stop.
+Do not mix examples across platforms. Report the selected project path, manifest path, detected
+platform, and other matching candidates. If multiple UI platforms remain possible for the target,
+or the target project cannot be selected, ask one short question and stop before installing skills,
+fetching a platform index, or writing code. Multiple slugs are allowed only when each is tied to a
+different project or workload; never blend two UI framework indexes for one target project.
 
 Two slugs can both be correct: a React application that displays PDFs in the browser and signs them
 on a .NET server needs `pdf-viewer-sdk` and `document-sdk`. Two *UI framework* slugs never are.
@@ -127,29 +133,121 @@ with verification.
 
 ## Path A — official agent skills
 
-Syncfusion publishes component-aware skills containing setup, imports, modules and services,
-properties, events, theming, accessibility guidance and implementation patterns — and, more valuable,
-the failure modes that public documentation omits.
+Syncfusion publishes component-aware skills that include setup instructions, imports, modules, services, properties, events, theming guidance, accessibility recommendations, implementation patterns, and common failure scenarios not covered in public documentation.
 
-1. Check whether the matching skill is already installed in the agent's skills location.
+1. Check whether the required skill is already installed in the agent's configured skills location.
+   Prefer the existing matching project-local skill over a global copy. Do not reinstall or overwrite
+   a matching skill; if local and global copies differ, report both paths and revisions before using
+   either one.
 2. If missing and installation is within the user's request, choose the narrowest official pack
    or component skill from the retained inventory routing map, using the behavior-based
    comparison above. Read `references/skill-packs.md` for the verified repository names and commands.
+   Skill installation is separate from Syncfusion package installation; do not install component
+   packages until the skill selection step is complete.
 3. Before running a networked install or changing project-level agent configuration, follow the
-   host's authorization rules.
+   host's authorization rules. Report the source, target path, scope, and revision before making 
+   the change.
 4. Read the selected component `SKILL.md` completely before implementing. Read only the supporting
    references the requested features need.
-5. Follow the installed skill over remembered snippets. Match the versions already in the project
-   unless the user asked for an upgrade.
+5. Follow the installed skill over remembered snippets. 
 
-Prefer a single component skill when the component is known; install a full platform pack only when
-the user explicitly asks for the whole pack — never by default at setup or per request. At setup,
-install component skills only for Syncfusion components already present in the project, and wait
-until a user request actually requires a component before installing its skill. Project-local
-installation keeps the skill aligned with the repository and shareable with the team.
+After installation, report the skill repository, revision or version when available, installation
+path, project-local or global scope, and whether the installed revision matches the catalog. If the
+installer does not expose a verifiable revision, report provenance as unverified. Never include a
+license key, MCP API key, token, or other secret in the report.
 
-Installing an agent skill does not install the Syncfusion product packages. The component skill
-identifies the actual runtime dependencies; install those separately.
+### Version Resolution Policy (Mandatory)
+
+All Syncfusion packages within a project must use the same **major version**.
+
+Mixing major versions can result in licensing validation failures, package incompatibilities, and runtime issues.
+
+Before installing any new Syncfusion package:
+
+1. Inspect the project manifest (`package.json`, `.csproj`, or equivalent).
+2. Identify all existing Syncfusion packages.
+3. Extract only their major versions.
+4. Verify that all discovered Syncfusion packages use the same major version.
+5. If more than one major version is present, stop immediately. Do not install, upgrade, downgrade,
+   or generate Syncfusion code until the user chooses a version strategy.
+
+#### No Existing Syncfusion Packages
+
+If no Syncfusion packages are present:
+
+- Follow the component skill.
+- Install the version recommended by the component skill.
+
+#### Existing Syncfusion Packages Found
+
+### Fresh version gate
+
+Immediately before every product-package install, upgrade, downgrade, or Syncfusion code-generation
+change, re-read the selected project manifest and applicable lockfile. Do not reuse a version check
+from an earlier step or conversation. If the manifest or lockfile changed since the last check,
+invalidate the previous result and perform the version check again.
+
+If Syncfusion packages are already present:
+
+- Determine the project's shared major version.
+- If the discovered packages do not have one shared major version, fail closed and provide a
+   mixed-major compatibility report instead of selecting one major arbitrarily.
+- Ignore minor and patch versions.
+- Do not attempt to match an individual package's exact version.
+- Install the requested component using the latest available release within the project's major version.
+
+Example:
+
+```text
+Existing packages:
+@syncfusion/ej2-react-grids      33.1.44
+@syncfusion/ej2-react-buttons    33.2.7
+
+Project major version = 33
+
+New component:
+@syncfusion/ej2-react-schedule
+
+Install:
+Latest available 33.x.x release
+```
+
+For JavaScript-family packages, the major-version selector can be used directly:
+
+```bash
+npm install @syncfusion/ej2-react-grids@33
+```
+
+#### User-Specified Version
+
+If the user explicitly requests a Syncfusion version:
+
+1. Determine the project's Syncfusion major version from the existing installed packages.
+2. Compare the requested version against the project's version strategy.
+3. If the requested version is compatible with the project's major version, proceed using the standard installation process.
+4. If the requested version conflicts with the project's major version, stop immediately.
+
+Do not install the package when a version conflict exists.
+
+Instead, provide a version-difference report containing:
+
+- Requested package name
+- Requested version
+- Project major version
+- Existing Syncfusion packages and versions
+- Every distinct major version found and the package(s) that introduced it
+- Explanation that all Syncfusion packages in a project must share the same major version
+- Description of the detected conflict
+
+After reporting the conflict, wait for human guidance before making any changes.
+
+Example:
+
+Requested:
+
+```text
+@syncfusion/ej2-react-schedule@34.1.2
+```
 
 ## Path B — current documentation
 

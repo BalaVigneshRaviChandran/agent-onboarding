@@ -4,13 +4,13 @@
 
 | Situation | Do this |
 | --- | --- |
-| Generating or modifying Syncfusion code | Install the skill pack. MCP is optional. |
+| Generating or modifying Syncfusion code | Install the onboarding skill and the relevant component skills. MCP is optional. |
 | Confirming a current API or a release behaviour change | Query MCP, or search the platform docs |
 | No API key, or the user has not authorised one | Skip MCP. Skills plus documentation is a complete path. Do not block. |
 | User explicitly asked you to set up MCP | Follow https://ai.syncfusion.com/mcp/llms.txt for their editor |
 
 Skills carry procedural knowledge and failure modes; MCP carries current facts. The anonymous path —
-platform index plus skill pack plus public documentation — must work before any key exists.
+platform index plus onboarding skill plus relevant component skills plus public documentation — must work before any key exists.
 
 ## Environment variables
 
