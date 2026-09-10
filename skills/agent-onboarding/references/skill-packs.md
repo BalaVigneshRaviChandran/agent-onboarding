@@ -22,12 +22,6 @@ copy the name from the table rather than constructing it.
 
 ## Commands
 
-Before running a command, check whether the requested skill is already installed. Follow the host's
-authorization rules for networked installation and project-level configuration changes. Install the 
-skill only if it is not already installed. Do not reinstall or replace an existing matching skill. 
-By default, use the project-local installation and notify the user if a different global installation 
-is found.
-
 ```bash
 npx skills add syncfusion/<repository>                      # interactive
 npx skills add syncfusion/<repository> -y                    # whole pack
@@ -35,8 +29,6 @@ npx skills add syncfusion/<repository> --skill <skill_name>   # one skill
 npx skills add syncfusion/<repository> --agent cursor         # target one agent
 npx skills add https://github.com/syncfusion/<repository>     # equivalent to the shorthand
 ```
-
-
 
 `owner/repo` shorthand is valid. The installer is the `skills` CLI; `--list` shows a pack's contents
 without installing, and `-g` installs globally.

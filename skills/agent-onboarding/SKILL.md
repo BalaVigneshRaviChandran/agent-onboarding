@@ -136,9 +136,6 @@ with verification.
 Syncfusion publishes component-aware skills that include setup instructions, imports, modules, services, properties, events, theming guidance, accessibility recommendations, implementation patterns, and common failure scenarios not covered in public documentation.
 
 1. Check whether the required skill is already installed in the agent's configured skills location.
-   Prefer the existing matching project-local skill over a global copy. Do not reinstall or overwrite
-   a matching skill; if local and global copies differ, report both paths and revisions before using
-   either one.
 2. If missing and installation is within the user's request, choose the narrowest official pack
    or component skill from the retained inventory routing map, using the behavior-based
    comparison above. Read `references/skill-packs.md` for the verified repository names and commands.
@@ -154,11 +151,6 @@ Syncfusion publishes component-aware skills that include setup instructions, imp
 4. Read the selected component `SKILL.md` completely before implementing. Read only the supporting
    references the requested features need.
 5. Follow the installed skill over remembered snippets. 
-
-After installation, report the skill repository, revision or version when available, installation
-path, project-local or global scope, and whether the installed revision matches the catalog. If the
-installer does not expose a verifiable revision, report provenance as unverified. Never include a
-license key, MCP API key, token, or other secret in the report.
 
 ### Version Resolution Policy (Mandatory)
 
