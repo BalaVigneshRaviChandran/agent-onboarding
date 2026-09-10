@@ -60,12 +60,16 @@ The fastest correct path is almost always:
    behavior and picking the best match.
    Ask one short question only when the descriptions genuinely cannot distinguish the candidates
    or no candidate fits — never as a shortcut.
-6. Install, on demand, the component skills the comparison selects — one request may name or
-   imply one component or many. Run the candidate-comparison above once per component and install
-   exactly that set: not more, not less — a request for three components installs exactly those
-   three component skills, and nothing else. Never install a whole platform pack unless the user
-   explicitly asks for it. At setup, install only component skills for Syncfusion components
-   already present in the project; later requests install only the skills they actually require.
+6. Component skills are installed automatically as needed.
+   Run the candidate-comparison above once per requested or implied component and
+   install exactly the selected component skills before proceeding. Install only
+   the skills required for the current request, not more and not less.
+   During setup, install component skills only for Syncfusion components already
+   present in the project. For later requests, install only the additional skills
+   required by that request.
+   Installation is part of fulfilling the request.
+   Never install a whole platform skill pack automatically. Install a platform
+   skill pack only when the user explicitly asks for the entire pack.
 7. Read `https://ai.syncfusion.com/licensing.md` before touching any key.
 
 Subsequent requests in the same session resolve from the session inventory — do not fetch the
