@@ -112,7 +112,7 @@ output before the next step runs. If the artifact is missing, stop and fix that 
 | 1 | Detect the platform from repository manifests (`package.json`, `*.csproj`, `pubspec.yaml`, `*.sln`, `syncfusion.config.json`). | A one-line statement: `Platform: <slug>` with the manifest signal that produced it. |
 | 2 | Read the platform index `https://ai.syncfusion.com/<platform-slug>/llms.txt`. | The platform index file path you read. |
 | 3 | Inspect project manifests for existing Syncfusion packages. | A bullet list of `name@version` entries taken verbatim from `package.json` / `*.csproj` / `pubspec.yaml`. |
-| 4 | **Fresh Version Gate — mandatory.** Re-read the project manifest and lockfile. Determine the project's Syncfusion version using the package-manager rule from `references/version-resolution.md`: npm = shared major, NuGet = exact version, pub.dev = exact constraint. Do not invent a version from memory. If Syncfusion is not installed yet, record `N/A — no existing packages` and use the latest stable within the platform family. | A one-line statement: `Project Syncfusion version (package-manager rule): <value>` (for npm: `npm shared major=<N>`; for NuGet: `exact=<X.Y.Z>`; for Flutter: `constraint=<^X.Y.Z>`; or `N/A — no existing packages`). If a conflict exists, stop and report it. |
+| 4 | **Fresh Version Gate — mandatory.** Re-read the project manifest and lockfile. Determine the project's Syncfusion version using the package-manager rule from `references/version-resolution.md`: npm = shared major, NuGet = exact version, pub.dev = exact constraint. Do not invent a version from memory. If Syncfusion is not installed yet, record `no existing packages` and use the latest stable within the platform family. | A one-line statement: `Project Syncfusion version (package-manager rule): <value>` (for npm: `npm shared major=<N>`; for NuGet: `exact=<X.Y.Z>`; for Flutter: `constraint=<^X.Y.Z>`; or `no existing packages`). If a conflict exists, stop and report it. |
 | 5 | **Run** `npx skills add syncfusion/<repo> --skill <detected-component-skill>` for every detected Syncfusion component, control, library, viewer, editor, SDK, or migration task. One component = one `npx skills add` call. Do not bundle. | The exact command(s) executed and the terminal exit status / output snippet. |
 | 6 | If no Syncfusion packages are present, do not install component skills (this is the only "do not install" rule in Setup Mode). Do not install Syncfusion product packages during setup. **If you add, upgrade, downgrade, or remove a Syncfusion product package later (Task Mode), always invoke the package manager — `npm install`, `pnpm add`, `yarn add`, `dotnet add package`, or `flutter pub add` — and let it update the manifest, lockfile, and dependency tree. Never edit the manifest directly.** | A one-line statement: `Packages detected: <list or "none">` and either the commands from step 5 or the explicit decision not to install. For Task Mode package additions/upgrades, the proof is the exact package-manager command run and its exit status — not a manifest diff. |
 | 7 | Detect MCP availability (read `syncfusion.config.json` `mcp` block and the host editor's MCP config file if present). | The MCP status with the file path you read. |
@@ -131,7 +131,7 @@ Command flags for step 5 (skill installs):
 
 The final report in step 9 must use this template. Every field is mandatory. **Do not omit a
 field. Do not summarize a field with "see above".** If a field does not apply, write
-`N/A — <reason>`.
+`<reason>`.
 
 ```text
 ## Setup Mode report
@@ -139,7 +139,7 @@ field. Do not summarize a field with "see above".** If a field does not apply, w
 Platform: <slug from /llms.txt platform-slug table>
 
 Project Syncfusion version (Fresh Version Gate, step 4 — package-manager rule):
-- <npm shared major=<N> | NuGet exact=<X.Y.Z> | pub.dev constraint=<^X.Y.Z> | N/A — no existing packages>
+- <npm shared major=<N> | NuGet exact=<X.Y.Z> | pub.dev constraint=<^X.Y.Z> | no existing packages>
 
 Detected Syncfusion packages (from project manifest):
 - <name>@<version>   (source: <manifest file>)
@@ -155,12 +155,12 @@ Skill install commands executed:
 Installed skills (on-disk proof, from step 8):
 - <absolute path to installed SKILL.md>   (ls/dir output: <one-line snippet>)
 
-MCP status: <integrated | not integrated | not applicable>
+MCP status: <integrated | not integrated>
   - config file read: <path or "none">
-  - server name(s): <sf-<platform>-mcp or N/A>
+  - server name(s): <sf-<platform>-mcp>
 
-Licensing status: <license key present | license key absent | MIT only | N/A>
-  - license registration site: <https://… or N/A>
+Licensing status: <license key present | license key absent>
+  - license registration site: <https://… >
   - registerLicense call site: <file:line or "not present">
 
 Human action required: <bulleted list, or "None — setup is autonomous">
