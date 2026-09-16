@@ -46,6 +46,7 @@ and licensing rules across platforms.
 | Official skill-pack names and `npx skills add` commands | [skill-packs.md](references/skill-packs.md) |
 | When and how to set up a Syncfusion MCP server | [mcp-setup.md](references/mcp-setup.md) |
 | License-key handling, MCP API key handling, agent trust boundaries | [licensing.md](references/licensing.md) |
+| Package version resolution and compatibility rules | [version-resolution.md](references/version-resolution.md) |
 | Pre-completion verification checklist | [verification.md](references/verification.md) |
 
 
