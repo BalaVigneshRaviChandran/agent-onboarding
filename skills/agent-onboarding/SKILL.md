@@ -17,11 +17,21 @@ collision: the word the user typed matches one component while the behavior they
 to another — resolve it by comparing inventory descriptions against the required behavior, never by
 name alone.
 
+# Operation Modes
+
+This skill operates in two modes. Both modes are **executable procedures**, not descriptive
+summaries. A model that reaches the final report without producing the required proof artifacts
+has not completed the mode — it has described it.
+
 ## Hard rule — read the inventory before naming any skill
+
+This rule gates Setup Mode step 2 (read the platform index used to derive the inventory) and Task
+Mode step 3 (use the retained session inventory). It must be satisfied **first**, before either
+mode begins.
 
 You MUST have read the platform inventory at `https://ai.syncfusion.com/<platform-slug>/inventory.txt`
 in this session **before** you name, install, or write code against any Syncfusion component skill.
-If you have not read it in this session, fetch it now and do not continue.
+If you have not read it in this session, read it now and do not continue.
 
 When the user asks for a component, before you say "I will install skill X" or write any code:
 
@@ -35,14 +45,176 @@ Never propose a skill name, package name, or import path that is not present in 
 just read. If the only source you have for a name is your training data, label it **unverified** and
 stop until you can cite the inventory or an installed `SKILL.md`.
 
+## Hard rule — install packages with the package manager, never by editing the manifest
+
+A package install is the package manager running, the registry resolving, peer dependencies
+reconciling, the lockfile updating, and `node_modules` / the equivalent populated. None of that
+happens when a manifest file is hand-edited.
+
+When installing, upgrading, downgrading, migrating, or removing a Syncfusion package — or any
+project package the Syncfusion change depends on:
+
+- **Always invoke the package manager.** React / Angular / Vue / JavaScript: `npm install <pkg>`,
+  `pnpm add <pkg>`, or `yarn add <pkg>`. .NET: `dotnet add package <pkg>`. Flutter:
+  `flutter pub add <pkg>`. Use the same manager the project already uses; do not switch managers.
+- **Never hand-edit the manifest.** Do not add a line to `package.json` /
+  `.csproj` / `pubspec.yaml` to install a package. A package name typed into a manifest without
+  the manager running is a corrupt installation: no peer-dep resolution, no `node_modules` /
+  `obj` / `.dart_tool`, no lockfile update. The next `npm install` / restore will either rewrite
+  the line (silently) or fail.
+- **The version string must come from the rule, not from the editor.** For npm use a major-version
+  selector (`@33`) so the lockfile is the source of truth; for NuGet pass `--version <exact>` every
+  time; for Flutter pass `'^X.Y.Z'` from the existing constraint.
+- **Disabled environments are the only exception.** If the package manager cannot run here (no
+  network, sandboxed executor, user approval denied), stop and ask the human rather than editing
+  the manifest on their behalf. Tell the human the exact command to run in their terminal.
+- **Manifests are read-only inputs.** They are inspected for existing versions and signals; they
+  are not tools for installation. Apply this rule even when you are about to revert the change one
+  minute later: leaving a stale manifest line is still drift, and a future agent will not know you
+  intended to revert it.
+- **Proof artifact.** When the report names "Packages installed", it must cite the exact package
+  manager command and its exit status, not a manifest diff. A manifest diff is what an
+  installer produces — not what an agent produces.
+
+Failure modes this rule prevents:
+
+- `package.json` lists a package the lockfile does not resolve → next `npm install` reverts it
+  silently and the agent thinks the install succeeded.
+- `package.json` pins a version while `node_modules` has a different one → tests pass locally,
+  CI fails on restore.
+- `.csproj` lists `<PackageReference>` with no `dotnet restore` having run → first build errors out
+  with NU1605/NU1105 and the developer re-runs the same broken workflow.
+- `pubspec.yaml` lists `syncfusion_flutter_*` with no `flutter pub get` having happened → runtime
+  "package not found" with no compile-time signal.
+- Peer-dep drift (e.g. `react` mismatch in `@syncfusion/ej2-react-grids`) the agent never sees
+  because the manager never ran.
+
+## Setup Mode
+
+Triggered when the user asks to:
+
+- set up Syncfusion
+- onboard a project
+- prepare an AI agent
+- configure Syncfusion skills
+
+**Setup Mode executes skill installs. It does not only describe them.** A response that contains
+the words "I will install" or "skills to install" without a passing step 8 verification has not
+completed Setup Mode and is incomplete. **Do not produce the final report until step 9 passes**
+(the report itself must include the Fresh Version Gate line from step 4 and the on-disk
+proof from step 8).
+
+Steps are gated. Each step has a **required proof artifact** that must appear in your working
+output before the next step runs. If the artifact is missing, stop and fix that step.
+
+| # | Step | Required proof artifact before next step |
+| --- | --- | --- |
+| 1 | Detect the platform from repository manifests (`package.json`, `*.csproj`, `pubspec.yaml`, `*.sln`, `syncfusion.config.json`). | A one-line statement: `Platform: <slug>` with the manifest signal that produced it. |
+| 2 | Read the platform index `https://ai.syncfusion.com/<platform-slug>/llms.txt`. | The platform index file path you read. |
+| 3 | Inspect project manifests for existing Syncfusion packages. | A bullet list of `name@version` entries taken verbatim from `package.json` / `*.csproj` / `pubspec.yaml`. |
+| 4 | **Fresh Version Gate — mandatory.** Re-read the project manifest and lockfile. Determine the project's Syncfusion version using the package-manager rule from `references/version-resolution.md`: npm = shared major, NuGet = exact version, pub.dev = exact constraint. Do not invent a version from memory. If Syncfusion is not installed yet, record `N/A — no existing packages` and use the latest stable within the platform family. | A one-line statement: `Project Syncfusion version (package-manager rule): <value>` (for npm: `npm shared major=<N>`; for NuGet: `exact=<X.Y.Z>`; for Flutter: `constraint=<^X.Y.Z>`; or `N/A — no existing packages`). If a conflict exists, stop and report it. |
+| 5 | **Run** `npx skills add syncfusion/<repo> --skill <detected-component-skill>` for every detected Syncfusion component, control, library, viewer, editor, SDK, or migration task. One component = one `npx skills add` call. Do not bundle. | The exact command(s) executed and the terminal exit status / output snippet. |
+| 6 | If no Syncfusion packages are present, do not install component skills (this is the only "do not install" rule in Setup Mode). Do not install Syncfusion product packages during setup. **If you add, upgrade, downgrade, or remove a Syncfusion product package later (Task Mode), always invoke the package manager — `npm install`, `pnpm add`, `yarn add`, `dotnet add package`, or `flutter pub add` — and let it update the manifest, lockfile, and dependency tree. Never edit the manifest directly.** | A one-line statement: `Packages detected: <list or "none">` and either the commands from step 5 or the explicit decision not to install. For Task Mode package additions/upgrades, the proof is the exact package-manager command run and its exit status — not a manifest diff. |
+| 7 | Detect MCP availability (read `syncfusion.config.json` `mcp` block and the host editor's MCP config file if present). | The MCP status with the file path you read. |
+| 8 | **Verify the install wrote files.** List the target skills directory and confirm every installed `SKILL.md` is present. | The `ls` / `dir` / `Get-ChildItem` output showing the on-disk `SKILL.md` path(s). If the install failed or no files were written, **stop and report the failure** — do not proceed to step 9. |
+| 9 | Produce the Setup Mode report using the **required output template** below. | The report itself, matching the template, with every field populated and every on-disk path cited. |
+
+Command flags for step 5 (skill installs):
+
+- Use `-y` (non-interactive) so the install does not block on a prompt.
+- Use `--agent <name>` when the host agent is known (e.g. `--agent code-studio`, `--agent cursor`,
+  `--agent claude-code`); omit it to install into the shared `.agents/skills/` directory.
+- If the host requires it, follow the host's authorization rules before the networked install.
+- One detected component = one `npx skills add` call. Do not bundle.
+
+### Setup Mode — required output template
+
+The final report in step 9 must use this template. Every field is mandatory. **Do not omit a
+field. Do not summarize a field with "see above".** If a field does not apply, write
+`N/A — <reason>`.
+
+```text
+## Setup Mode report
+
+Platform: <slug from /llms.txt platform-slug table>
+
+Project Syncfusion version (Fresh Version Gate, step 4 — package-manager rule):
+- <npm shared major=<N> | NuGet exact=<X.Y.Z> | pub.dev constraint=<^X.Y.Z> | N/A — no existing packages>
+
+Detected Syncfusion packages (from project manifest):
+- <name>@<version>   (source: <manifest file>)
+
+Packages installed (Task Mode only — list commands executed by the package manager):
+- <exact npm install / pnpm add / yarn add / dotnet add package / flutter pub add command>   (exit code: <N>)
+
+Installed skills (on-disk proof, from step 8):
+
+Skill install commands executed:
+- <exact npx skills add … command>
+
+Installed skills (on-disk proof, from step 8):
+- <absolute path to installed SKILL.md>   (ls/dir output: <one-line snippet>)
+
+MCP status: <integrated | not integrated | not applicable>
+  - config file read: <path or "none">
+  - server name(s): <sf-<platform>-mcp or N/A>
+
+Licensing status: <license key present | license key absent | MIT only | N/A>
+  - license registration site: <https://… or N/A>
+  - registerLicense call site: <file:line or "not present">
+
+Human action required: <bulleted list, or "None — setup is autonomous">
+```
+
+A response that does not match this template has not completed Setup Mode.
+
+### New projects
+
+A project may contain no Syncfusion packages.
+
+In this case:
+
+- Detect the platform.
+- Do not install component skills.
+- Do not install Syncfusion product packages.
+- Report that no existing Syncfusion usage was detected — using the template above, with
+  `Detected Syncfusion packages: none` and `Human action required: None — no Syncfusion usage
+  detected`. This is still a Setup Mode completion, not a bypass.
+
+Install component skills only when:
+- existing Syncfusion usage is detected, or
+- the user requests new Syncfusion functionality.
+
+## Task Mode
+
+Triggered when the user requests Syncfusion code, components, controls, libraries, upgrades, migrations, or troubleshooting.
+
+Before proceeding:
+
+1. Re-read project manifests.
+2. **Fresh Version Gate — mandatory.** Re-read the manifest and lockfile. Determine the
+   project's Syncfusion version using the package-manager rule from
+   `references/version-resolution.md`: npm = shared major, NuGet = exact version,
+   pub.dev = exact constraint. Do not invent a version from memory. Do not install a
+   Syncfusion package unless its version satisfies that rule. When installing a new
+   package, install the latest published release that satisfies the rule. If a conflict
+   exists, stop and report it — do not align versions yourself. Required proof artifact:
+   `Project Syncfusion version (package-manager rule): <value>`.
+3. Identify the candidate component skills from the retained session inventory. Match against
+   required behavior, not against the word the user typed. State the candidates, required behavior,
+   and the evidence (the inventory entry that matches) exactly as the Hard rule requires. Skip this
+   step only if the inventory already resolved this request in the same session.
+4. Install missing skills if necessary. One `npx skills add --skill <name>` per detected component.
+   Do not install the whole platform pack.
+5. Read the selected component `SKILL.md` completely, plus only the references the task needs.
+6. Follow the Version Resolution Policy before any package installation.
+7. Continue with implementation.
+
 ## Route first
 
 The fastest correct path is almost always:
 
-1. Identify the target project and platform from the repository manifests. Use the active file,
-   the user's named project, or the solution/startup project to select the target. If no target is
-   known, enumerate manifests while excluding generated and dependency directories such as
-   `node_modules`, `bin`, and `obj`; never choose the first matching manifest.
+1. Identify the platform from the repository manifest.
 2. Fetch `https://ai.syncfusion.com/<platform-slug>/llms.txt` for that platform. It is self-sufficient:
    skill pack, packages, license registration, a complete example, and a verification checklist.
 3. Read the platform inventory — `https://ai.syncfusion.com/<platform-slug>/inventory.txt` — once
@@ -51,25 +223,20 @@ The fastest correct path is almost always:
    The session inventory is the routing source for the rest of the session, for as long as session
    memory lasts.
 4. List the candidate component skills from the session inventory: every skill whose name,
-   category, or description matches the request. Component names collide inside a platform too,
+5. Run the **Fresh Version Gate** before installing, upgrading, downgrading, or generating
+   code against any Syncfusion package. Re-read the manifest and lockfile. Determine the
+   project's Syncfusion version using the package-manager rule in
+   `references/version-resolution.md` — npm = shared major, NuGet = exact version,
+   pub.dev = exact constraint. Do not invent a version from memory and do not default to
+   npm-style "same major" on NuGet or Flutter. If a conflict exists, stop and report it;
+   do not align versions yourself.
+6. READ `https://ai.syncfusion.com/licensing.md` before touching any key.inside a platform too,
    not only across platforms: "a calendar to display events" matches both the Calendars skill
    (date-selection inputs) and the Scheduler skill (event and appointment management).
 5. Choose by required behavior, not by the word the user typed, and state the candidates, the
-   choice, and the evidence exactly as the "Hard rule" checklist above requires. First resolve
-   collisions yourself by comparing each candidate's inventory description against the required
-   behavior and picking the best match.
-   Ask one short question only when the descriptions genuinely cannot distinguish the candidates
-   or no candidate fits — never as a shortcut.
-6. Component skills are installed automatically as needed.
-   Run the candidate-comparison above once per requested or implied component and
-   install exactly the selected component skills before proceeding. Install only
-   the skills required for the current request, not more and not less.
-   During setup, install component skills only for Syncfusion components already
-   present in the project. For later requests, install only the additional skills
-   required by that request.
-   Installation is part of fulfilling the request.
-   Never install a whole platform skill pack automatically. Install a platform
-   skill pack only when the user explicitly asks for the entire pack.
+   choice, and the evidence exactly as the "Hard rule" checklist above requires. If two
+   candidates still tie and the choice changes the implementation, ask one short question and stop.
+6. Install only the component skills required for detected Syncfusion usage or the current task.
 7. Read `https://ai.syncfusion.com/licensing.md` before touching any key.
 
 Subsequent requests in the same session resolve from the session inventory — do not fetch the
@@ -104,7 +271,8 @@ If you have no network access, the rest of this skill and its references carry e
 Inspect the repository before asking the user for anything already present. Determine:
 
 - framework, language, runtime, package manager
-- existing Syncfusion packages and their exact versions
+- existing Syncfusion packages and their exact versions (used by the Fresh Version Gate; do not
+  call a version unless it is in the manifest or lockfile)
 - the requested component or SDK and the features actually needed
 - whether this is a new integration, an edit, an upgrade, a migration, or troubleshooting
 - existing theme and CSS setup, application bootstrap, and test and build commands
@@ -114,11 +282,8 @@ Inspect the repository before asking the user for anything already present. Dete
 Manifest signals: `package.json` for React, Angular, Vue and JavaScript; `.csproj` for Blazor,
 ASP.NET Core, ASP.NET MVC, MAUI, WPF, WinForms and WinUI; `pubspec.yaml` for Flutter.
 
-Do not mix examples across platforms. Report the selected project path, manifest path, detected
-platform, and other matching candidates. If multiple UI platforms remain possible for the target,
-or the target project cannot be selected, ask one short question and stop before installing skills,
-fetching a platform index, or writing code. Multiple slugs are allowed only when each is tied to a
-different project or workload; never blend two UI framework indexes for one target project.
+Do not mix examples across platforms. If the repository does not resolve the platform and the choice
+changes the implementation, ask one short question and stop.
 
 Two slugs can both be correct: a React application that displays PDFs in the browser and signs them
 on a .NET server needs `pdf-viewer-sdk` and `document-sdk`. Two *UI framework* slugs never are.
@@ -137,225 +302,32 @@ with verification.
 
 ## Path A — official agent skills
 
-Syncfusion publishes component-aware skills that include setup instructions, imports, modules, services, properties, events, theming guidance, accessibility recommendations, implementation patterns, and common failure scenarios not covered in public documentation.
+Syncfusion publishes component-aware skills containing setup, imports, modules and services,
+properties, events, theming, accessibility guidance and implementation patterns — and, more valuable,
+the failure modes that public documentation omits.
 
-1. Check whether the required skill is already installed in the agent's configured skills location.
+1. Check whether the matching skill is already installed in the agent's skills location.
 2. If missing and installation is within the user's request, choose the narrowest official pack
    or component skill from the retained inventory routing map, using the behavior-based
    comparison above. Read `references/skill-packs.md` for the verified repository names and commands.
-   Skill installation is separate from Syncfusion package installation; do not install component
-   packages until the skill selection step is complete.
-   For dependency changes, use the official package-manager command specified by the selected
-   platform or component skill (`dotnet add package`, `npm install`, `flutter pub add`, or the
-   equivalent). Do not manually edit a manifest as a substitute for package-manager installation;
-   use file-edit tools only for direct source or configuration changes.
 3. Before running a networked install or changing project-level agent configuration, follow the
-   host's authorization rules. Report the source, target path, scope, and revision before making 
-   the change.
+   host's authorization rules.
 4. Read the selected component `SKILL.md` completely before implementing. Read only the supporting
    references the requested features need.
-5. Follow the installed skill over remembered snippets. 
+5. Follow the installed skill over remembered snippets. Before every Syncfusion package install,
+   upgrade, downgrade, migration, or code-generation change, run the **Fresh Version Gate** — see
+   `references/version-resolution.md`. The matching rule is package-manager-specific: npm shared
+   major, NuGet exact version, Flutter exact constraint. Do not pick a version from memory. Do
+   not install packages or generate Syncfusion code until the Fresh Version Gate passes. Match
+   the project's existing version unless the user has chosen an explicit upgrade strategy.
 
-### Version Resolution Policy (Mandatory)
+Prefer installing only the component skills required for detected Syncfusion usage or the current task.
 
-All Syncfusion packages within a project must use the same **major version**.
+Do not install every component skill in a platform inventory solely because the platform was detected or because future work is anticipated. Project-local installation keeps the skill aligned
+with the repository and shareable with the team.
 
-Mixing major versions can result in licensing validation failures, package incompatibilities, and runtime issues.
-
-Before installing any new Syncfusion package:
-
-1. Inspect the project manifest (`package.json`, `.csproj`, or equivalent).
-2. Identify all existing Syncfusion packages.
-3. Extract their versions — for npm, the major version; for NuGet and Flutter, the exact version.
-4. Verify consistency — for npm, all packages share the same major version; for NuGet and Flutter,
-   all packages share the same exact version.
-5. If the versions are not consistent, stop immediately. Do not install, upgrade, downgrade,
-   or generate Syncfusion code until the user chooses a version strategy.
-
-#### No Existing Syncfusion Packages
-
-If no Syncfusion packages are present:
-
-- Follow the component skill.
-- Install the version recommended by the component skill.
-
-#### Existing Syncfusion Packages Found
-
-The version-matching strategy differs by package manager. Identify the platform first, then follow
-the rule for that package manager.
-
-| Platform family | Manifest | Package manager | Version rule |
-| --- | --- | --- | --- |
-| React, Angular, Vue, JavaScript | `package.json` | npm | Match the shared major version |
-| Blazor, ASP.NET Core, ASP.NET MVC, MAUI, WPF, WinForms, WinUI | `.csproj` | NuGet (`dotnet add package`) | Match the exact version of existing packages |
-| Flutter | `pubspec.yaml` | pub.dev (`flutter pub add`) | Match the exact version constraint of existing packages |
-
-For NuGet and Flutter: if existing packages share the same major version but differ in their exact
-version or constraint (for example `27.1.48` and `27.2.3` in the same `.csproj`), stop and report
-the inconsistency. Do not pick one arbitrarily. Wait for the user to align all existing packages to
-a single exact version before installing a new one.
-
-### Fresh version gate
-
-Immediately before every product-package install, upgrade, downgrade, or Syncfusion code-generation
-change, re-read the selected project manifest and applicable lockfile. Do not reuse a version check
-from an earlier step or conversation. If the manifest or lockfile changed since the last check,
-invalidate the previous result and perform the version check again.
-
-If Syncfusion packages are already present:
-
-- Determine the project's shared major version.
-- If the discovered packages do not have one shared major version, fail closed and provide a
-   mixed-major compatibility report instead of selecting one major arbitrarily.
-- **npm only:** Ignore minor and patch versions. Install the requested component using the latest
-  available release within the project's major version.
-- **NuGet only:** All packages must be at the exact same version. Read the exact version from the
-  existing `<PackageReference>` entries and use that version when installing the new package.
-- **Flutter only:** All packages must use the same version constraint. Read the exact constraint
-  from existing `syncfusion_flutter_*` entries in `pubspec.yaml` and use that constraint when
-  adding the new package.
-
-Example:
-
-```text
-Existing packages:
-@syncfusion/ej2-react-grids      33.1.44
-@syncfusion/ej2-react-buttons    33.2.7
-
-Project major version = 33
-
-New component:
-@syncfusion/ej2-react-schedule
-
-Install:
-Latest available 33.x.x release
-```
-
-For JavaScript-family packages, the major-version selector can be used directly:
-
-```bash
-npm install @syncfusion/ej2-react-grids@33
-```
-
-For NuGet (.NET platforms — Blazor, ASP.NET Core, ASP.NET MVC, MAUI, WPF, WinForms, WinUI):
-
-Read the exact version from the existing `<PackageReference>` entries in `.csproj`. All Syncfusion
-.NET packages in a project must be at the **exact same version**, not just the same major. They are
-released and tested as a synchronized set.
-
-Example:
-
-```text
-Existing packages in .csproj:
-<PackageReference Include="Syncfusion.Blazor.Grid"    Version="27.1.48" />
-<PackageReference Include="Syncfusion.Blazor.Themes"  Version="27.1.48" />
-
-Project exact version = 27.1.48
-
-New component:
-Syncfusion.Blazor.Charts
-
-Install:
-dotnet add package Syncfusion.Blazor.Charts --version 27.1.48
-```
-
-Do not use `--version 27.*`. That leaves a floating range in the `.csproj`, which can silently pull
-a different patch version on future restores and break the synchronized-set guarantee.
-
-For Flutter (pub.dev):
-
-Read the exact version constraint from existing `syncfusion_flutter_*` entries in `pubspec.yaml`.
-Match that constraint exactly.
-
-Example:
-
-```text
-Existing packages in pubspec.yaml:
-syncfusion_flutter_charts: ^27.1.48
-syncfusion_flutter_core:   ^27.1.48
-
-Project version constraint = ^27.1.48
-
-New component:
-syncfusion_flutter_calendar
-
-Install:
-flutter pub add syncfusion_flutter_calendar:'^27.1.48'
-```
-
-#### User-Specified Version
-
-If the user explicitly requests a Syncfusion version:
-
-1. Determine the project's Syncfusion major version from the existing installed packages.
-2. Compare the requested version against the project's version strategy.
-3. If the requested version is compatible with the project's major version, proceed using the standard installation process.
-4. If the requested version conflicts with the project's major version, stop immediately.
-
-Do not install the package when a version conflict exists.
-
-Instead, provide a version-difference report containing:
-
-- Requested package name
-- Requested version
-- Project major version
-- Existing Syncfusion packages and versions
-- Every distinct major version found and the package(s) that introduced it
-- Explanation that all Syncfusion packages in a project must share the same major version
-- Description of the detected conflict
-
-After reporting the conflict, wait for human guidance before making any changes.
-
-npm example:
-
-Requested:
-
-```text
-@syncfusion/ej2-react-schedule@34.1.2
-```
-
-Project has:
-
-```text
-@syncfusion/ej2-react-grids      33.1.44
-@syncfusion/ej2-react-buttons    33.2.7
-```
-
-Conflict: requested major (34) does not match project major (33). Stop and report.
-
-NuGet example:
-
-Requested:
-
-```text
-dotnet add package Syncfusion.Blazor.Charts --version 28.1.35
-```
-
-Project has:
-
-```text
-<PackageReference Include="Syncfusion.Blazor.Grid"   Version="27.1.48" />
-<PackageReference Include="Syncfusion.Blazor.Themes" Version="27.1.48" />
-```
-
-Conflict: requested major (28) does not match project exact version (27.1.48). Stop and report.
-
-Flutter example:
-
-Requested:
-
-```text
-syncfusion_flutter_calendar: ^28.1.35
-```
-
-Project has:
-
-```text
-syncfusion_flutter_charts: ^27.1.48
-syncfusion_flutter_core:   ^27.1.48
-```
-
-Conflict: requested major (28) does not match project constraint major (27). Stop and report.
+Installing an agent skill does not install the Syncfusion product packages. The component skill
+identifies the actual runtime dependencies; install those separately.
 
 ## Path B — current documentation
 
@@ -444,8 +416,9 @@ For each proposed fix, cite the source, per "Implement" and the "Hard rule" abov
 ## References
 
 | Reference | When to use |
-| --- | --- |
+| --- | --- |. Mandatory. The matching rule is package-manager-specific (npm = shared major, NuGet = exact version, Flutter = exact constraint).
 | `references/skill-packs.md` | Choosing or installing a pack; you need a verified repository name |
 | `references/mcp-setup.md` | Configuring an MCP server, or deciding whether you need one |
 | `references/licensing.md` | Any key, secret, CI, or account question |
+| `references/version-resolution.md` | Before installing, upgrading, downgrading, or generating code against any Syncfusion package — the matching rule is package-manager-specific |
 | `references/verification.md` | Before reporting that an implementation works |
