@@ -130,8 +130,7 @@ Command flags for step 5 (skill installs):
 ### Setup Mode — required output template
 
 The final report in step 9 must use this template. Every field is mandatory. **Do not omit a
-field. Do not summarize a field with "see above".** If a field does not apply, write
-`<reason>`.
+field. Do not summarize a field with "see above".** If a field does not apply, write `<reason>`.
 
 ```text
 ## Setup Mode report
