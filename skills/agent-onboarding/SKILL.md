@@ -112,7 +112,7 @@ output before the next step runs. If the artifact is missing, stop and fix that 
 | 1 | Detect the platform from repository manifests (`package.json`, `*.csproj`, `pubspec.yaml`, `*.sln`, `syncfusion.config.json`). | A one-line statement: `Platform: <slug>` with the manifest signal that produced it. |
 | 2 | Read the platform index `https://ai.syncfusion.com/<platform-slug>/llms.txt`. | The platform index file path you read. |
 | 3 | Inspect project manifests for existing Syncfusion packages. | A bullet list of `name@version` entries taken verbatim from `package.json` / `*.csproj` / `pubspec.yaml`. |
-| 4 | **Fresh Version Gate — mandatory.** Re-read the project manifest and lockfile. Determine the project's Syncfusion version using the package-manager rule from `references/version-resolution.md`: npm = shared major, NuGet = exact version, pub.dev = exact constraint. Do not invent a version from memory. If Syncfusion is not installed yet, record `N/A — no existing packages` and use the latest stable within the platform family. | A one-line statement: `Project Syncfusion version (package-manager rule): <value>` (for npm: `npm shared major=<N>`; for NuGet: `exact=<X.Y.Z>`; for Flutter: `constraint=<^X.Y.Z>`; or `N/A — no existing packages`). If a conflict exists, stop and report it. |
+| 4 | **Fresh Version Gate — mandatory.** Re-read the project manifest and lockfile. Determine the project's Syncfusion version using the package-manager rule from `references/version-resolution.md`: npm = shared major, NuGet = exact version, pub.dev = exact constraint. Do not invent a version from memory. If Syncfusion is not installed yet, record `no existing packages` and use the latest stable within the platform family. | A one-line statement: `Project Syncfusion version (package-manager rule): <value>` (for npm: `npm shared major=<N>`; for NuGet: `exact=<X.Y.Z>`; for Flutter: `constraint=<^X.Y.Z>`; or `no existing packages`). If a conflict exists, stop and report it. |
 | 5 | **Run** `npx skills add syncfusion/<repo> --skill <detected-component-skill>` for every detected Syncfusion component, control, library, viewer, editor, SDK, or migration task. One component = one `npx skills add` call. Do not bundle. | The exact command(s) executed and the terminal exit status / output snippet. |
 | 6 | If no Syncfusion packages are present, do not install component skills (this is the only "do not install" rule in Setup Mode). Do not install Syncfusion product packages during setup. **If you add, upgrade, downgrade, or remove a Syncfusion product package later (Task Mode), always invoke the package manager — `npm install`, `pnpm add`, `yarn add`, `dotnet add package`, or `flutter pub add` — and let it update the manifest, lockfile, and dependency tree. Never edit the manifest directly.** | A one-line statement: `Packages detected: <list or "none">` and either the commands from step 5 or the explicit decision not to install. For Task Mode package additions/upgrades, the proof is the exact package-manager command run and its exit status — not a manifest diff. |
 | 7 | Detect MCP availability (read `syncfusion.config.json` `mcp` block and the host editor's MCP config file if present). | The MCP status with the file path you read. |
@@ -122,7 +122,7 @@ output before the next step runs. If the artifact is missing, stop and fix that 
 Command flags for step 5 (skill installs):
 
 - Use `-y` (non-interactive) so the install does not block on a prompt.
-- Use `--agent <name>` when the host agent is known (e.g. `--agent code-studio`, `--agent cursor`,
+- Use `--agent <name>` when the host agent is known (e.g. `--agent codestudio`, `--agent cursor`,
   `--agent claude-code`); omit it to install into the shared `.agents/skills/` directory.
 - If the host requires it, follow the host's authorization rules before the networked install.
 - One detected component = one `npx skills add` call. Do not bundle.
@@ -138,7 +138,7 @@ field. Do not summarize a field with "see above".** If a field does not apply, w
 Platform: <slug from /llms.txt platform-slug table>
 
 Project Syncfusion version (Fresh Version Gate, step 4 — package-manager rule):
-- <npm shared major=<N> | NuGet exact=<X.Y.Z> | pub.dev constraint=<^X.Y.Z> | N/A — no existing packages>
+- <npm shared major=<N> | NuGet exact=<X.Y.Z> | pub.dev constraint=<^X.Y.Z> | no existing packages>
 
 Detected Syncfusion packages (from project manifest):
 - <name>@<version>   (source: <manifest file>)
@@ -247,6 +247,79 @@ Refetch the inventory, only when the session inventory cannot resolve the reques
 covers the behavior, two candidates tie in a way that changes the implementation, or the request
 names a component the map does not contain — it may be newer than the setup read or belong to a
 different platform slug.
+
+## Component Registry
+
+The component registry is a curated, per-platform index of JSON templates. Each template
+packages a complete, verified implementation: source, exact package versions, and licensing
+posture. Use the registry whenever the component or variant is known, and use it as the first
+stop whenever it is not. When the requirement is outside what any template describes, fall back
+to the platform skill pack and skip the registry entirely.
+
+The registry is currently populated for **Angular**, **React**, **Vue**, **aspnet-core**, **aspnet-mvc**, **Blazor**, and **JavaScript**. Every other platform uses the skill pack as the only work surface.
+
+### Endpoints
+
+- Registry index (per platform): `https://ai.syncfusion.com/r/<platform-slug>/registry.json`
+- Per-template source: `https://ai.syncfusion.com/r/<platform-slug>/<variant>.json`
+- For React, include the language segment: `https://ai.syncfusion.com/r/react/<js|ts>/<variant>.json`
+
+### When to consult the registry
+
+Treat the registry as a normal step in fulfilling a request. Trigger it when any of the
+following is true:
+
+1. **The user names a known variant** — for example "add a Grid with grouping", "show a stacked
+   column chart", "render the PDF viewer with annotations". The variant is implied, so fetching
+   the matching template is more precise than generating from memory.
+2. **The user gives a vague component request** — for example "add a chart", "I need a
+   scheduler", "drop in a data grid". Pick the template whose `name` or `description` best matches the intent, adapt it to the project, and state the chosen template before adapting.
+3. **The request clearly maps to one of the available templates.** Use that template as the
+   starting point. Adapt for framework, language, theming, and package version — do not paste
+   verbatim when the project conventions differ.
+
+### When NOT to consult the registry
+
+Skip the registry when the requirement is outside what any template describes — custom behaviour,
+application-level composition, or a workload that does not exist as a variant. In those cases,
+do not use the registry at all; fall back to the platform skill pack and state the reason.
+
+### Procedure before writing any code
+
+1. Identify the target platform from the manifest (see "Establish the project context").
+2. Install the relevant component skill first (see "Path A — official agent skills"). The skill
+   pack teaches the integration and licensing rules; the registry item applies those rules to
+   one specific implementation.
+3. Fetch `https://ai.syncfusion.com/r/<platform-slug>/registry.json` once per session.
+4. Pick a matching template by intent. When multiple templates match, prefer the one whose
+   `behaviors` align most precisely with the user's stated need.
+5. Fetch `https://ai.syncfusion.com/r/<platform-slug>/<variant>.json` (or the React
+   `js|ts` variant) to get the full source, exact dependency versions, package name, and
+   licensing posture.
+6. Cite the registry URL and the matched template name before pasting any source into the
+   project.
+7. Adapt the template — framework, language, theming, package version, project conventions.
+8. Run the verification checklist (see "Verify").
+
+### Relationship to the platform inventory
+
+`inventory.txt` and `registry.json` serve different surfaces; do not treat them as
+interchangeable:
+
+- **`inventory.txt`** is the **routing surface**. It maps every component skill on a platform
+  to its category, package, and behaviours. Read it once during setup and retain a session
+  inventory thereafter.
+- **`registry.json`** is the **work surface** for known variants. It returns a complete,
+  verified implementation template rather than a routing map.
+
+When the request describes a goal ("view my PDF file", "display events on a calendar"), start from the inventory. When the request names a component or a variant, go straight to the registry.
+
+### Fallback
+
+If the platform has no registry, no template matches, or the matched template only partially
+covers the requirement, fall back to the platform skill pack and explicitly state the gap:
+which platform, which request, and why the registry did not apply. Never silently generate from
+trained memory when a template exists that covers the same behaviour.
 
 ## Sources of knowledge
 
