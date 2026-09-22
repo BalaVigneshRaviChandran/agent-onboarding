@@ -256,7 +256,7 @@ posture. Use the registry whenever the component or variant is known, and use it
 stop whenever it is not. When the requirement is outside what any template describes, fall back
 to the platform skill pack and skip the registry entirely.
 
-The registry is currently populated for **Angular**, **React**, **Vue**, **aspnet-core**, **aspnet-mvc**, **Blazor**, and **JavaScript**. Every other platform uses the skill pack as the only work surface.
+The registry is currently populated for **Angular**, **React**, **Vue**, **aspnet-core**, **aspnet-mvc**, **Blazor**, **JavaScript**, **.NET MAUI**, **WinForms**, **WPF**, and **WinUI**. Every other platform uses the skill pack as the only work surface.
 
 ### Endpoints
 
